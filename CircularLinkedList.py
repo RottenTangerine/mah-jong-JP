@@ -40,18 +40,3 @@ class CircularLinkedList(object):
         if cur.data == item:
             return cur
         return None
-
-    def search(self, item):
-        # empty
-        if self.is_empty():
-            return None
-        # more than one element
-        cur = self.head
-        while cur.next != self.head:
-            if cur.data == item:
-                return cur
-            cur = cur.next
-        # only one element
-        if cur.data == item:
-            return cur
-        return None

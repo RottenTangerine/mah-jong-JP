@@ -21,5 +21,7 @@ class Indicator(CircularLinkedList):
 
 if __name__ == '__main__':
     indicator = Indicator()
-    output = indicator.find_dora(33)
-    print(output)
+    test_id = 21
+    output = indicator.find_dora(test_id)
+    from emoji import id_to_emoji
+    print(f"Dora Indicator:{id_to_emoji(test_id)}, Dora:{id_to_emoji(output)}")
