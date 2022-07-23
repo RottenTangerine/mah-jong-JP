@@ -1,5 +1,5 @@
 from CircularLinkedList import CircularLinkedList
-from tiles import tile_index
+from tiles import tile_index, id2suit
 
 
 class Indicator(CircularLinkedList):
@@ -10,18 +10,13 @@ class Indicator(CircularLinkedList):
     def __init__(self):
         super().__init__()
 
-    def id2suit(self, id):
-        for i, j in tile_index.items():
-            if id in j: return i
-        return None
-
     def find_dora(self, type_id):
-        return eval(f'self.{self.id2suit(type_id)}.search({type_id}).next.data')
+        return eval(f'self.{id2suit(type_id)}.search({type_id}).next.data')
 
 
 if __name__ == '__main__':
     indicator = Indicator()
-    test_id = 21
+    test_id = 26
     output = indicator.find_dora(test_id)
     from emoji import id_to_emoji
     print(f"Dora Indicator:{id_to_emoji(test_id)}, Dora:{id_to_emoji(output)}")
