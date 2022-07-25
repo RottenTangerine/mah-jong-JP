@@ -5,9 +5,16 @@ tile_index = {'characters': range(0, 9),
               'dragons': range(31, 34), }
 TILE_TYPES = 34
 
+
 def id2suit(id):
     for i, j in tile_index.items():
         if id in j: return i
+    return None
+
+
+def id2suit_id(id):
+    for x, (i, j) in enumerate(tile_index.items()):
+        if id in j: return x
     return None
 
 
