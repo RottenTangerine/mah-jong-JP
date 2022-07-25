@@ -4,29 +4,31 @@ from collections import deque
 import numpy as np
 
 
-def hand2array(l:list):
-    _tile_list = deque(l)
-    array = []
-    for i, j in tile_index.items():
-        short_arr = []
-        while _tile_list:
-            _tile = _tile_list.popleft()
-            if _tile in j:
-                short_arr = short_arr + [_tile]
-                continue
-            break
-        _tile_list.appendleft(_tile)
-        array += [short_arr]
-    return array
-
-
 def count_dict(l):
     return {i: np.sum(l == i) for i in range(tts)}
 
 
-def check(arr, _tile):
+def check(hand, _tile):
+    def hand2array(l: list):
+        _tile_list = deque(l)
+        array = []
+        for i, j in tile_index.items():
+            short_arr = []
+            while _tile_list:
+                _tile = _tile_list.popleft()
+                if _tile in j:
+                    short_arr = short_arr + [_tile]
+                    continue
+                break
+            _tile_list.appendleft(_tile)
+            array += [short_arr]
+        return array
+
     # only occurs in same suit
+    arr = hand2array(hand)
     arr = arr[id2suit_id(_tile)]
+    hand.append(_tile)
+
     def _chiiability(arr, __tile):
         # chowable range
         set1 = set(tile_index[id2suit(_tile)])
@@ -37,6 +39,7 @@ def check(arr, _tile):
             if __tile + i in new_set and (__tile + i) in arr:
                 return True
             return False
+
         a = (__tile - 2, __tile - 1) if _next(-1) and _next(-2) else False
         b = (__tile - 1, __tile + 1) if _next(-1) and _next(1) else False
         c = (__tile + 1, __tile + 2) if _next(1) and _next(2) else False
@@ -48,20 +51,46 @@ def check(arr, _tile):
     def _kongability(arr, __tile):
         return True if arr.count(__tile) > 2 else False
 
-    def _rongability(arr, __tile):
-        pass
+    def _rongability(hand: list, __tile):
+        def rong_checker(l):
+            if len(l) != 0 and len(l) < 2: return False
+            if not l: return True
+            l = deque(l)
+            first = l.popleft()
+            second = l.popleft()
+            if not l:
+                return True if first == second else False  # last double
+            third = l.popleft()
+            if first == second - 1 == third - 2:
+                return rong_checker(l)
 
-    return [_chiiability(arr, _tile), _pongability(arr, _tile), _kongability(arr, _tile)]
+            if first == second == third:
+                if rong_checker(l): return True
+
+            if first == second:
+                l.appendleft(third)
+                if rong_checker(l): return True
+
+            return False
+
+        arr = hand2array(sorted(hand))
+        return np.all([rong_checker(i) for i in arr])
+
+    return [_chiiability(arr, _tile), _pongability(arr, _tile), _kongability(arr, _tile), _rongability(hand, _tile)]
 
 
 if __name__ == '__main__':
     from tiles import id2suit_id
-    hand = [4, 6, 10, 13, 13, 13, 23, 24, 25, 31, 31, 32, 33]
+    from emoji import id_to_emoji
 
-    arr = hand2array(hand)
-    ic(arr)
-    ic(check(arr, 13), check(arr, 31))
-    ic(10 in arr[id2suit_id(12)])
+    # hand = [3, 3, 3, 4, 4, 4, 5, 5, 5, 14, 14, 14, 22]
+    hand = [0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 8, 8]
+    for i in hand:
+        print(id_to_emoji(i), end='')
 
+    tile = 5
+    print(' ', end='')
+    print(id_to_emoji(tile))
 
-
+    # test
+    print(check(hand, tile))
