@@ -18,6 +18,13 @@ def id2suit_id(id):
     return None
 
 
+def id2wind(id):
+    if id in tile_index['winds']:
+        return tile_index['winds'][id - 27]
+    if id + 27 in tile_index['winds']:
+        return tile_index['winds'][id]
+
+
 class Tile:
     def __init__(self):
         self.id = None
@@ -29,3 +36,6 @@ class Tile:
 
     def __str__(self):
         return self.id
+
+if __name__ == '__main__':
+    print(id2wind(2))
