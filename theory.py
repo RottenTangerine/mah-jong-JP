@@ -1,8 +1,6 @@
 from icecream import ic
-from collections import deque
 from emoji import list_to_emoji
-from tiles import tile_index
-from conversion import list2array, list2count_list, list2dict
+from conversion import list2array, list2dict
 
 
 def turns_needed(hand):
@@ -61,20 +59,26 @@ def turns_needed(hand):
                 if len(s_list) == 2:
                     m_d_adder(m_d_list, 0, 1)
                 else:
-                    ic(m_list)
-                    ic(s_list)
                     count_dict = list2dict(s_list)
                     # exact triple
                     m_d_triple_list = [0, 0]
+                    m_d_triple_list_collection = []
                     for i, (k, v) in enumerate(count_dict.items()):
                         if v > 2:
+                            small_m_d_triple_list = [0, 0]
                             new_s_list = s_list.copy()
                             for _ in range(3):
                                 new_s_list.remove(k)
-                            m_d_adder(m_d_triple_list, 1, 0)
+                            m_d_adder(small_m_d_triple_list, 1, 0)
                             success = True
                             new_m_list = arr_to_relative(list2array(new_s_list))[index]
-                            m_d_adder(m_d_triple_list, *(m_d_counter(new_m_list, index)))
+                            m_d_adder(small_m_d_triple_list, *(m_d_counter(new_m_list, index)))
+                            m_d_triple_list_collection += [small_m_d_triple_list]
+                    if len(m_d_triple_list_collection) == 1:
+                        m_d_adder(m_d_triple_list, *m_d_triple_list_collection[0])
+                    elif len(m_d_triple_list_collection) > 1:
+                        m_d_adder(m_d_triple_list, *max(m_d_triple_list_collection, key=lambda a: a[0]))
+
                     # exact straight
                     m_d_straight_list = [0, 0]
                     if index < 3:  # character yes/no?
@@ -97,7 +101,8 @@ def turns_needed(hand):
 
                     if m_d_triple_list[0] > m_d_straight_list[0]:
                         m_d_adder(m_d_list, *m_d_triple_list)
-                    else: m_d_adder(m_d_list, *m_d_straight_list)
+                    else:
+                        m_d_adder(m_d_list, *m_d_straight_list)
 
                     if not success:
                         new_s_list = s_list.copy()
@@ -109,17 +114,18 @@ def turns_needed(hand):
 
             return m_d_list
 
+        def calculate_steps(m, d):
+            # Reference: https://www.bilibili.com/read/cv10974292
+            c = max(m + d - 5, 0)
+            q = 0 if m + d > 4 and len(head_candidates(hand)) == 0 else 1
+            ic(m, d, c, q)
+            return 9 - 2 * m - d + c - q
+
         total_m_d_list = [0, 0]
         for index, m_list in enumerate(relative_list):
             m_d_adder(total_m_d_list, *m_d_counter(m_list, index))
 
-        def calculate_steps(m, d):
-            # Reference: https://www.bilibili.com/read/cv10974292
-            m, d, c, q = [0] * 4
-            c = max(m + d - 5, 0)
-            q = 0 if m + d > 4 and len(head_candidates(hand)) == 0 else 1
-            return 9 - 2 * m - d + c - q
-
+        ic(total_m_d_list)
         return calculate_steps(*total_m_d_list)
 
 
@@ -141,10 +147,15 @@ def turns_needed(hand):
         :param _list: hand list
         :return: the turns to format thirteen 19 tiles type
         """
-        turns = 12
+        turns = 13
+        has_head = False
         one_nine = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
-        for _k in list2dict(_list).keys():
-            if _k in one_nine: turns -= 1
+        for _k, _v in list2dict(_list).items():
+            if _k in one_nine:
+                turns -= 1
+                if _v > 1: has_head = True
+        if has_head:
+            turns -= 1
         return max(turns, 0)
 
     return (search_turns_basic(arr_to_relative(arr)),
@@ -152,7 +163,9 @@ def turns_needed(hand):
             search_turns_thirteen_19_tiles(hand))
 
 
-list = [0, 2, 5, 8, 8, 11, 12, 23, 28, 29, 31, 32, 33]
-# list = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
-ic(list_to_emoji(list))
-ic(turns_needed(list))
+if __name__ == '__main__':
+    # list = [0, 2, 5, 8, 8, 11, 12, 23, 28, 29, 31, 32, 33]
+    list = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
+    # list = [3, 3, 3, 4, 4, 4, 5, 5, 5, 14, 14, 14, 22]
+    ic(list_to_emoji(list))
+    ic(turns_needed(list))
