@@ -1,6 +1,7 @@
 from icecream import ic
 from tiles import TILE_TYPES as tts, tile_index, id2suit, id2suit_id
 from collections import deque
+from conversion import list2array
 import numpy as np
 
 
@@ -9,23 +10,9 @@ def count_dict(l):
 
 
 def check(hand, _tile):
-    def hand2array(l: list):
-        _tile_list = deque(l)
-        array = []
-        for i, j in tile_index.items():
-            short_arr = []
-            while _tile_list:
-                _tile = _tile_list.popleft()
-                if _tile in j:
-                    short_arr = short_arr + [_tile]
-                    continue
-                break
-            _tile_list.appendleft(_tile)
-            array += [short_arr]
-        return array
 
     # only occurs in same suit
-    arr = hand2array(hand)
+    arr = list2array(hand)
     arr = arr[id2suit_id(_tile)]
     hand.append(_tile)
 
@@ -73,7 +60,7 @@ def check(hand, _tile):
 
             return False
 
-        arr = hand2array(sorted(hand))
+        arr = list2array(sorted(hand))
         return np.all([rong_checker(i) for i in arr])
 
     return [_chiiability(arr, _tile), _pongability(arr, _tile), _kongability(arr, _tile), _rongability(hand, _tile)]
