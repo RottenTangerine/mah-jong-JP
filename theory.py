@@ -1,6 +1,6 @@
 from icecream import ic
 from emoji import list_to_emoji
-from conversion import list2array, list2dict
+from conversion import list2array, list2dict, arr_to_relative
 
 
 def turns_needed(hand):
@@ -14,36 +14,6 @@ def turns_needed(hand):
             if i == cache: candidates.add(i)
             cache = i
         return candidates
-
-    def m_list2relation(_a, character=False):
-        m_list, s_list = [], []
-        for _tile in _a:
-            if not s_list:
-                s_list.append(_tile)
-                continue
-            if character:
-                if _tile == s_list[-1]:
-                    s_list.append(_tile)
-                    continue
-            else:
-                if _tile - s_list[-1] < 3:
-                    s_list.append(_tile)
-                    continue
-            m_list += [s_list]
-            s_list = [_tile]
-        else:
-            m_list += [s_list]
-        return m_list
-
-    def arr_to_relative(arr):
-        relative_arr = []
-        for i, _a in enumerate(arr):
-            if i < 3:
-                relative_arr += [m_list2relation(_a, False)]
-            else:
-                relative_arr += [m_list2relation(_a, True)]
-
-        return relative_arr
 
     def search_turns_basic(relative_list):
 
@@ -107,9 +77,7 @@ def turns_needed(hand):
                     if not success:
                         new_s_list = s_list.copy()
                         m_d_adder(m_d_list, 0, 1)
-                        ic(new_s_list)
                         new_m_list = arr_to_relative(list2array(new_s_list[2:]))[index]
-                        ic(new_m_list)
                         m_d_adder(m_d_list, *(m_d_counter(new_m_list, index)))
 
             return m_d_list
@@ -118,17 +86,13 @@ def turns_needed(hand):
             # Reference: https://www.bilibili.com/read/cv10974292
             c = max(m + d - 5, 0)
             q = 0 if m + d > 4 and len(head_candidates(hand)) == 0 else 1
-            ic(m, d, c, q)
             return 9 - 2 * m - d + c - q
 
         total_m_d_list = [0, 0]
         for index, m_list in enumerate(relative_list):
             m_d_adder(total_m_d_list, *m_d_counter(m_list, index))
 
-        ic(total_m_d_list)
         return calculate_steps(*total_m_d_list)
-
-
 
     # seven pairs
     def search_turns_seven_pairs(_list):
@@ -137,9 +101,12 @@ def turns_needed(hand):
         :return: the turns to format seven pairs type
         """
         turns = 6
+        triple_counter = 0
+        ic(list2dict(_list).values())
         for _v in list2dict(_list).values():
             if _v > 1: turns -= 1
-        return turns
+            if _v > 2: triple_counter += 1
+        return max(turns, triple_counter)
 
     # thirteen 19 tiles
     def search_turns_thirteen_19_tiles(_list):
@@ -163,9 +130,15 @@ def turns_needed(hand):
             search_turns_thirteen_19_tiles(hand))
 
 
+def effectie_draws(hand):
+    for i in range(34):
+        pass
+
+
 if __name__ == '__main__':
     # list = [0, 2, 5, 8, 8, 11, 12, 23, 28, 29, 31, 32, 33]
     list = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
     # list = [3, 3, 3, 4, 4, 4, 5, 5, 5, 14, 14, 14, 22]
+    list = [0, 1, 4, 5, 10, 11, 12, 12, 12, 13, 14, 20, 21]
     ic(list_to_emoji(list))
     ic(turns_needed(list))

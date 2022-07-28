@@ -50,3 +50,39 @@ def list2count_list(_list: list, length=9):
     for i in _list:
         count_list[i] += 1
     return count_list
+
+
+def arr_to_relative(arr):
+    """
+    group close tiles together
+    :param arr:
+    :return:
+    """
+    def m_list2relation(_a, character=False):
+        m_list, s_list = [], []
+        for _tile in _a:
+            if not s_list:
+                s_list.append(_tile)
+                continue
+            if character:
+                if _tile == s_list[-1]:
+                    s_list.append(_tile)
+                    continue
+            else:
+                if _tile - s_list[-1] < 3:
+                    s_list.append(_tile)
+                    continue
+            m_list += [s_list]
+            s_list = [_tile]
+        else:
+            m_list += [s_list]
+        return m_list
+
+    relative_arr = []
+    for i, _a in enumerate(arr):
+        if i < 3:
+            relative_arr += [m_list2relation(_a, False)]
+        else:
+            relative_arr += [m_list2relation(_a, True)]
+
+    return relative_arr
