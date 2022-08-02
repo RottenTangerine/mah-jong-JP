@@ -181,3 +181,22 @@ def s_list_breakdown(s_list, index):
     return clean_ans
 
 
+def relative_breakdown(relative_arr):
+    def _unpacking(collection):
+        arr = []
+        for a in collection:
+            s_arr = []
+            for b in a:
+                for c in b:
+                    s_arr.append(c)
+            arr.append(s_arr)
+        return arr
+
+    m_list_collection, s_list_collection = [[]] * 2
+    for index, relative_m_list in enumerate(relative_arr):
+        s_list_collection = [s_list_breakdown(s_list, index) for s_list in relative_m_list if s_list]
+        s_list_collection = _unpacking([list(i) for i in product(*s_list_collection) if i])
+        if s_list_collection:
+            m_list_collection.append(s_list_collection)
+    m_list_collection = _unpacking([list(i) for i in product(*m_list_collection) if i])
+    return m_list_collection
