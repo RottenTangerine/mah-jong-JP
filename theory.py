@@ -1,97 +1,38 @@
 from icecream import ic
 from emoji import list_to_emoji
-from conversion import list2array, list2dict, arr_to_relative
+from conversion import list2array, list2dict, arr_to_relative, relative_breakdown
 
 
 def turns_needed(hand):
     # basic
-    arr = list2array(hand)
-
-    def head_candidates(list):
-        candidates = set()
-        cache = -1
-        for i in list:
-            if i == cache: candidates.add(i)
-            cache = i
-        return candidates
-
-    def search_turns_basic(relative_list):
-
+    def search_turns_basic(_list):
         def m_d_adder(_m_d_list, m, d):
             _m_d_list[0] += m
             _m_d_list[1] += d
 
-        def m_d_counter(m_list, index):
-            success = False
-            m_d_list = [0, 0]
-            for s_list in m_list:
-                if len(s_list) < 2: continue
-                if len(s_list) == 2:
-                    m_d_adder(m_d_list, 0, 1)
-                else:
-                    count_dict = list2dict(s_list)
-                    # exact triple
-                    m_d_triple_list = [0, 0]
-                    m_d_triple_list_collection = []
-                    for i, (k, v) in enumerate(count_dict.items()):
-                        if v > 2:
-                            small_m_d_triple_list = [0, 0]
-                            new_s_list = s_list.copy()
-                            for _ in range(3):
-                                new_s_list.remove(k)
-                            m_d_adder(small_m_d_triple_list, 1, 0)
-                            success = True
-                            new_m_list = arr_to_relative(list2array(new_s_list))[index]
-                            m_d_adder(small_m_d_triple_list, *(m_d_counter(new_m_list, index)))
-                            m_d_triple_list_collection += [small_m_d_triple_list]
-                    if len(m_d_triple_list_collection) == 1:
-                        m_d_adder(m_d_triple_list, *m_d_triple_list_collection[0])
-                    elif len(m_d_triple_list_collection) > 1:
-                        m_d_adder(m_d_triple_list, *max(m_d_triple_list_collection, key=lambda a: a[0]))
+        def count_m_d(breakdown_list):
+            m_d_counter = [0, 0]
+            head = False
+            for i in breakdown_list:
+                if len(i) == 3:
+                    m_d_adder(m_d_counter, 1, 0)
+                if len(i) == 2:
+                    m_d_adder(m_d_counter, 0, 1)
+                    if not head and i[0] == i[1]:
+                        head = True
+            return calculate_steps(*m_d_counter, head)
 
-                    # exact straight
-                    m_d_straight_list = [0, 0]
-                    if index < 3:  # character yes/no?
-                        keys = count_dict.keys()
-                        if len(keys) > 2:
-                            c1, c2 = -10, -10
-                            for i in keys:
-                                if i - 2 == c1 - 1 == c2:
-                                    new_s_list = s_list.copy()
-                                    new_s_list.remove(i)
-                                    new_s_list.remove(c1)
-                                    new_s_list.remove(c2)
-                                    m_d_adder(m_d_straight_list, 1, 0)
-                                    success = True
-                                    new_m_list = arr_to_relative(list2array(new_s_list))[index]
-                                    m_d_adder(m_d_straight_list, *(m_d_counter(new_m_list, index)))
-                                else:
-                                    c2 = c1
-                                    c1 = i
-
-                    if m_d_triple_list[0] > m_d_straight_list[0]:
-                        m_d_adder(m_d_list, *m_d_triple_list)
-                    else:
-                        m_d_adder(m_d_list, *m_d_straight_list)
-
-                    if not success:
-                        new_s_list = s_list.copy()
-                        m_d_adder(m_d_list, 0, 1)
-                        new_m_list = arr_to_relative(list2array(new_s_list[2:]))[index]
-                        m_d_adder(m_d_list, *(m_d_counter(new_m_list, index)))
-            return m_d_list
-
-        def calculate_steps(m, d):
+        def calculate_steps(m, d, head):
             # Reference: https://www.bilibili.com/read/cv10974292
             c = max(m + d - 5, 0)
-            q = 0 if m + d > 4 and len(head_candidates(hand)) == 0 else 1
+            q = 0 if m + d > 4 and not head else 1
             return 9 - 2 * m - d + c - q
 
-        total_m_d_list = [0, 0]
-        for index, m_list in enumerate(relative_list):
-            m_d_adder(total_m_d_list, *m_d_counter(m_list, index))
-        ic(total_m_d_list)
-        return calculate_steps(*total_m_d_list)
+        relative = arr_to_relative(list2array(hand))
+        collection = relative_breakdown(relative)
+        return min([count_m_d(b_list) for b_list in collection])
+
+
 
     # seven pairs
     def search_turns_seven_pairs(_list):
@@ -124,7 +65,7 @@ def turns_needed(hand):
             turns -= 1
         return max(turns, 0)
 
-    return (search_turns_basic(arr_to_relative(arr)),
+    return (search_turns_basic(hand),
             search_turns_seven_pairs(hand),
             search_turns_thirteen_19_tiles(hand))
 
