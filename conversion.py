@@ -1,5 +1,6 @@
 from collections import deque
 from tiles import tile_index
+from itertools import product
 
 
 def list2array(_list: list):
@@ -82,8 +83,8 @@ def m_list_to_relative_m_list(_m, is_number=True):
 def arr_to_relative(arr):
     """
     group close tiles together
-    :param arr:
-    :return:
+    :param arr: array
+    :return: relative array
     """
     relative_arr = []
     for i, _a in enumerate(arr):
@@ -96,39 +97,87 @@ def arr_to_relative(arr):
 
 
 def s_list_breakdown(s_list, index):
+    """
+    break down the s_list
+    :param s_list: s_list
+    :param index: index of s_list to m_list (to identify if the s_list is a number tile list)
+    :return:
+    """
     ans = []
     success = False
     if len(s_list) < 3:
-        return [s_list]
+        return [[s_list]]
     # exact triple
     new_m_list: list = s_list.copy()
     for k, v in list2dict(s_list).items():
         if v > 2:
             for _ in range(3):
                 new_m_list.remove(k)
+            new_relative_m_list = m_list_to_relative_m_list(new_m_list)
+            if len(new_relative_m_list) == 2:
+                left_s_list, right_s_list = new_relative_m_list
+                for _s in product(s_list_breakdown(left_s_list, index), s_list_breakdown(right_s_list, index)):
+                    _s = [i for i in _s]
+                    ans.append([[k, k, k]] + _s)
+            elif len(new_relative_m_list[0]) == 0:
+                ans.append([[k, k, k]])
+            else:
+                for new_s_list in m_list_to_relative_m_list(new_m_list):
+                    sub_ans = s_list_breakdown(new_s_list, index)
+                    for _s in sub_ans:
+                        ans.append([[k, k, k]] + _s)
             success = True
-            for new_s_list in m_list_to_relative_m_list(new_m_list):
-                ans.append([[k, k, k]] + [s_list_breakdown(new_s_list, index)])
+            break
 
     # exact straight
-    new_m_list: list = s_list.copy()
     if index < 3:
         keys = list2dict(s_list).keys()
         if len(keys) > 2:
             c1, c2 = -10, -10
             for i in keys:
+                new_m_list: list = s_list.copy()
                 if i - 2 == c1 - 1 == c2:
                     new_m_list.remove(i)
                     new_m_list.remove(c1)
                     new_m_list.remove(c2)
+                    new_relative_m_list = m_list_to_relative_m_list(new_m_list)
+                    if len(new_relative_m_list) == 2:
+                        left_s_list, right_s_list = new_relative_m_list
+                        sub_ans_combinations = product(s_list_breakdown(left_s_list, index),
+                                                       s_list_breakdown(right_s_list, index))
+                        for _s in sub_ans_combinations:
+                            _s = _s[0] + _s[1]
+                            ans.append([[c2, c1, i]] + _s)
+                    elif len(new_relative_m_list[0]) == 0:
+                        ans.append([[c2, c1, i]])
+                    else:
+                        for new_s_list in new_relative_m_list:
+                            sub_ans = s_list_breakdown(new_s_list, index)
+                            for _s in sub_ans:
+                                ans.append([[c2, c1, i]] + _s)
+
                     success = True
-                    for new_s_list in m_list_to_relative_m_list(new_m_list):
-                        ans.append([[c2, c1, i]] + [s_list_breakdown(new_s_list, index)])
-                else:
-                    c2 = c1
-                    c1 = i
+                c2 = c1
+                c1 = i
     # other
     if not success:
-        ans += [s_list[:2]] + s_list_breakdown(s_list[2:], index)
+        i = 0
+        for i in range(2, len(s_list), 2):
+            ans.append(s_list[i - 2: i])
+        else:
+            ans.append(s_list[i:])
+            ans = [ans]
 
-    return ans
+    # drop duplicate
+    for a in ans:
+        for b in a:
+            b.sort()
+        a.sort()
+
+    clean_ans = []
+    for i in ans:
+        if i not in clean_ans:
+            clean_ans.append(i)
+    return clean_ans
+
+
