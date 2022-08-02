@@ -79,7 +79,6 @@ def turns_needed(hand):
                         m_d_adder(m_d_list, 0, 1)
                         new_m_list = arr_to_relative(list2array(new_s_list[2:]))[index]
                         m_d_adder(m_d_list, *(m_d_counter(new_m_list, index)))
-
             return m_d_list
 
         def calculate_steps(m, d):
@@ -91,7 +90,7 @@ def turns_needed(hand):
         total_m_d_list = [0, 0]
         for index, m_list in enumerate(relative_list):
             m_d_adder(total_m_d_list, *m_d_counter(m_list, index))
-
+        ic(total_m_d_list)
         return calculate_steps(*total_m_d_list)
 
     # seven pairs
@@ -140,5 +139,6 @@ if __name__ == '__main__':
     list = [0, 8, 9, 17, 18, 26, 27, 28, 29, 30, 31, 32, 33]
     # list = [3, 3, 3, 4, 4, 4, 5, 5, 5, 14, 14, 14, 22]
     list = [0, 1, 4, 5, 10, 11, 12, 12, 12, 13, 14, 20, 21]
+    ic(arr_to_relative(list2array(list)))
     ic(list_to_emoji(list))
     ic(turns_needed(list))
