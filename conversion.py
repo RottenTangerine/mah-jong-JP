@@ -1,6 +1,8 @@
 from collections import deque
 from tiles import tile_index
 from itertools import product
+from functools import lru_cache
+from icecream import ic
 
 
 def list2array(_list: list):
@@ -116,8 +118,10 @@ def s_list_breakdown(s_list, index):
             new_relative_m_list = m_list_to_relative_m_list(new_m_list)
             if len(new_relative_m_list) == 2:
                 left_s_list, right_s_list = new_relative_m_list
-                for _s in product(s_list_breakdown(left_s_list, index), s_list_breakdown(right_s_list, index)):
-                    _s = [i for i in _s]
+                sub_ans_combinations = product(s_list_breakdown(left_s_list, index),
+                                               s_list_breakdown(right_s_list, index))
+                for _s in sub_ans_combinations:
+                    _s = _s[0] + _s[1]
                     ans.append([[k, k, k]] + _s)
             elif len(new_relative_m_list[0]) == 0:
                 ans.append([[k, k, k]])
