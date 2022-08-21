@@ -9,6 +9,8 @@ class Player(object):
         self.point = 25000
         self.tile_river = []
         self.hand = []
+        self.fulu = []
+        self.lichi = False
         self.wind = -1
 
     def __str__(self):

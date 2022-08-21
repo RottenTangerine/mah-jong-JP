@@ -26,8 +26,8 @@ def id2wind(id):
 
 
 class Tile:
-    def __init__(self):
-        self.id = None
+    def __init__(self, i=None):
+        self.id = i
         self.owner = None
         self.isDora = False
         self.isRed = False

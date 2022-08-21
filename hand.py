@@ -38,6 +38,9 @@ def check(hand, _tile):
     def _kongability(arr, __tile):
         return True if arr.count(__tile) > 2 else False
 
+    def _lichiability():
+        pass
+
     def _rongability(hand: list, __tile):
         def rong_checker(l):
             if len(l) != 0 and len(l) < 2: return False
